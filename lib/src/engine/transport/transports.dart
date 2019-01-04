@@ -14,7 +14,6 @@ import 'package:logging/logging.dart';
 import 'package:socket_io_common/src/engine/parser/parser.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
 import 'package:socket_io_client/src/engine/socket.dart';
-import 'package:socket_io_client/src/engine/transport/jsonp_transport.dart';
 import 'package:socket_io_client/src/engine/transport/websocket_transport.dart';
 import 'package:socket_io_client/src/engine/transport/xhr_transport.dart';
 
@@ -33,7 +32,7 @@ class Transports {
       if (options['forceJSONP'] != true) {
         return new XHRTransport(options);
       } else {
-        if (options['jsonp'] != false) return new JSONPTransport(options);
+//        if (options['jsonp'] != false) return new JSONPTransport(options);
         throw new StateError('JSONP disabled');
       }
     } else {

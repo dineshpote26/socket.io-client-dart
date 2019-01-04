@@ -12,7 +12,6 @@ import 'dart:convert';
  *
  * Copyright (C) 2017 Potix Corporation. All Rights Reserved.
  */
-import 'dart:html';
 
 import 'package:logging/logging.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
@@ -73,14 +72,14 @@ class Socket extends EventEmitter {
     if (uri.isNotEmpty) {
       this.uri = Uri.parse(uri);
       opts['hostname'] = this.uri.host;
-      opts['secure'] = this.uri.scheme == 'https' || this.uri.scheme == 'wss';
+      opts['secure'] = (this.uri.scheme == 'https') || this.uri.scheme == 'wss';
       opts['port'] = this.uri.port;
       if (this.uri.hasQuery) opts['query'] = this.uri.query;
     } else if (opts.containsKey('host')) {
       opts['hostname'] = Uri.parse(opts['host']).host;
     }
 
-    this.secure = opts['secure'] ?? (window.location.protocol == 'https:');
+    this.secure = opts['secure'] ?? false;
 
     if (opts['hostname'] != null && !opts.containsKey('port')) {
       // if no port is specified manually, use the protocol default
@@ -89,11 +88,8 @@ class Socket extends EventEmitter {
 
     this.agent = opts['agent'] ?? false;
     this.hostname =
-        opts['hostname'] ?? (window.location.hostname ?? 'localhost');
-    this.port = opts['port'] ??
-        (window.location.port.isNotEmpty
-            ? int.parse(window.location.port)
-            : (this.secure ? 443 : 80));
+        opts['hostname'] ?? 'localhost';
+    this.port = opts['port'] ?? (this.secure ? 443 : 80);
     var query = opts['query'] ?? {};
     if (query is String)
       this.query = decode(query);

@@ -347,7 +347,7 @@ class Manager extends EventEmitter {
     };
 
     if (socket == null) {
-      socket = new Socket(this, nsp, opts);
+      socket = Socket(this, nsp, opts);
       this.nsps[nsp] = socket;
       socket.on('connecting', onConnecting);
       socket.on('connect', (_) {

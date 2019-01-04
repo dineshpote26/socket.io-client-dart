@@ -11,7 +11,7 @@
  * Copyright (C) 2017 Potix Corporation. All Rights Reserved.
  */
 import 'dart:async';
-import 'dart:html';
+import 'dart:io';
 import 'package:logging/logging.dart';
 import 'package:socket_io_common/src/engine/parser/parser.dart';
 import 'package:socket_io_client/src/engine/parseqs.dart';
@@ -35,24 +35,20 @@ class WebSocketTransport extends Transport {
     this.protocols = opts['protocols'];
   }
 
-  void doOpen() {
+  void doOpen() async {
     var uri = this.uri();
     var protocols = this.protocols;
 
     try {
-      this.ws = new WebSocket(uri, protocols);
+      this.ws = await WebSocket.connect(uri);
     } catch (err) {
       return this.emit('error', err);
     }
 
-    if (this.ws.binaryType == null) {
-      this.supportsBinary = false;
-    }
-
-    this.ws.binaryType = 'arraybuffer';
-
+    this.supportsBinary = true;
     this.addEventListeners();
   }
+
 
   /**
    * Adds event listeners to the socket
@@ -60,13 +56,11 @@ class WebSocketTransport extends Transport {
    * @api private
    */
   void addEventListeners() {
-    this.ws
-      ..onOpen.listen((_) => onOpen())
-      ..onClose.listen((_) => onClose())
-      ..onMessage.listen((MessageEvent evt) => onData(evt.data))
-      ..onError.listen((e) {
-        onError('websocket error');
-      });
+    this.ws.listen(onData,
+        onError:(_) => onError('websocket error'),
+        onDone: () => onClose(),
+        cancelOnError:false
+    );
   }
 
   /**
@@ -100,7 +94,7 @@ class WebSocketTransport extends Transport {
         // throw an error
         try {
           // TypeError is thrown when passing the second argument on Safari
-          ws.send(data);
+          ws.add(data);
         } catch (e) {
           _logger.fine('websocket closed before onclose event');
         }

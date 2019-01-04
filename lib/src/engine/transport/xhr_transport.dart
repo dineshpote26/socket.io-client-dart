@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:html';
+import 'dart:io';
+import 'dart:convert';
 
 import 'dart:typed_data';
 import 'package:logging/logging.dart';
@@ -25,8 +26,9 @@ class XHRTransport extends PollingTransport {
   int requestTimeout;
   bool xd;
   bool xs;
-  Request sendXhr;
-  Request pollXhr;
+
+//  Request sendXhr;
+//  Request pollXhr;
 
   /**
    * XHR Polling constructor.
@@ -38,17 +40,13 @@ class XHRTransport extends PollingTransport {
     this.requestTimeout = opts['requestTimeout'];
 //    this.extraHeaders = opts.extraHeaders;
 
-    var isSSL = 'https:' == window.location.protocol;
-    var port = window.location.port;
-
     // some user agents have empty `location.port`
-    if (port.isEmpty) {
-      port = isSSL ? '443' : '80';
+    if (port == null) {
+      port = 80;
     }
 
-    this.xd = opts['hostname'] != window.location.hostname ||
-        int.parse(port) != opts['port'];
-    this.xs = opts['secure'] != isSSL;
+    this.xd = opts['xd'] ?? false;
+    this.xs = opts['xs'] ?? false;
   }
 
   /**
@@ -101,7 +99,6 @@ class XHRTransport extends PollingTransport {
     req.on('error', (err) {
       onError('xhr post error', err);
     });
-    this.sendXhr = req;
   }
 
   /**
@@ -118,7 +115,6 @@ class XHRTransport extends PollingTransport {
     req.on('error', (err) {
       onError('xhr poll error', err);
     });
-    this.pollXhr = req;
   }
 }
 
@@ -139,9 +135,10 @@ class Request extends EventEmitter {
   bool supportsBinary;
   bool enablesXDR;
   int requestTimeout;
-  HttpRequest xhr;
   String method;
   StreamSubscription readyStateChange;
+  HttpClientRequest req;
+  HttpClientResponse resp;
 
   Request(Map opts) {
     this.method = opts['method'] ?? 'GET';
@@ -165,86 +162,38 @@ class Request extends EventEmitter {
    * @api private
    */
   create() {
-//var opts = { 'agent': this.agent, 'xdomain': this.xd, 'xscheme': this.xs, 'enablesXDR': this.enablesXDR };
-
-    HttpRequest xhr = this.xhr = new HttpRequest();
-    var self = this;
+    HttpClient httpClient = HttpClient();
 
     try {
-      _logger.fine('xhr open ${this.method}: ${this.uri}');
-      xhr.open(this.method, this.uri, async: this.async);
-
-//try {
-//if (this.extraHeaders) {
-//xhr.setDisableHeaderCheck && xhr.setDisableHeaderCheck(true);
-//for (var i in this.extraHeaders) {
-//if (this.extraHeaders.hasOwnProperty(i)) {
-//xhr.setRequestHeader(i, this.extraHeaders[i]);
-//}
-//}
-//}
-//} catch (e) {}
-
-      if ('POST' == this.method) {
-        try {
-          if (this.isBinary) {
-            xhr.setRequestHeader('Content-type', 'application/octet-stream');
-          } else {
-            xhr.setRequestHeader('Content-type', 'text/plain;charset=UTF-8');
-          }
-        } catch (e) {}
-      }
-
-      try {
-        xhr.setRequestHeader('Accept', '*/*');
-      } catch (e) {}
-
-// ie6 check
-//if ('withCredentials' in xhr) {
-//xhr.withCredentials = true;
-//}
-
-      /*if (this.requestTimeout != null) {
-        xhr.timeout = this.requestTimeout;
-      }
-
-      if (this.hasXDR()) {
-        xhr.onload = function()
-        {
-          self.onLoad();
-        };
-        xhr.onerror = function()
-        {
-          self.onError(xhr.responseText);
-        };
-      } else {*/
-      readyStateChange = xhr.onReadyStateChange.listen((evt) {
-        if (xhr.readyState == 2) {
-          var contentType;
-          try {
-            contentType = xhr.getResponseHeader('Content-Type');
-          } catch (e) {}
-          if (contentType == 'application/octet-stream') {
-            xhr.responseType = 'arraybuffer';
-          }
-        }
-        if (4 != xhr.readyState) return;
-        if (200 == xhr.status || 1223 == xhr.status) {
-          self.onLoad();
-        } else {
-// make sure the `error` event handler that's user-set
-// does not throw in the same tick and gets caught here
-          Timer.run(() => self.onError(xhr.status));
-        }
-      });
-      /*}*/
-
-      _logger.fine('xhr data ${this.data}');
-      xhr.send(this.data);
+//      _logger.fine('xhr open ${this.method}: ${this.uri}');
+//
+//      httpClient.openUrl(this.method, Uri.parse(this.uri)).then((req) {
+////        return req.close();
+//        if ('POST' == this.method) {
+//          try {
+//            if (this.isBinary) {
+//              this.req.headers.add('Content-type', 'application/octet-stream');
+//            } else {
+//              this.req.headers.add('Content-type', 'text/plain;charset=UTF-8');
+//            }
+//          } catch (e) {}
+//        }
+//
+//        try {
+//          this.req.headers.add('Accept', '*/*');
+//        } catch (e) {}
+//
+//        _logger.fine('xhr data ${this.data}');
+//        req.add(this.data);
+//        req.close();
+//      }).then((HttpClientResponse response) {
+//        if (200 == response.statusCode || 1223 == response.statusCode) {
+//          this.onLoad(response);
+//        } else {
+//          Timer.run(() => this.onError(response.statusCode));
+//        }
+//      });
     } catch (e) {
-// Need to defer since .create() is called directly fhrom the constructor
-// and thus the 'error' event can only be only bound *after* this exception
-// occurs.  Therefore, also, we cannot throw here at all.
       Timer.run(() => onError(e));
       return;
     }
@@ -286,7 +235,7 @@ class Request extends EventEmitter {
    * @api private
    */
   cleanup([fromError]) {
-    if (this.xhr == null) {
+    if (this.req == null) {
       return;
     }
     // xmlhttprequest
@@ -298,11 +247,11 @@ class Request extends EventEmitter {
 
     if (fromError != null) {
       try {
-        this.xhr.abort();
+        this.req.close();
       } catch (e) {}
     }
 
-    this.xhr = null;
+    this.req = null;
   }
 
   /**
@@ -310,17 +259,17 @@ class Request extends EventEmitter {
    *
    * @api private
    */
-  onLoad() {
+  onLoad(HttpClientResponse resp) {
     var data;
     try {
       var contentType;
       try {
-        contentType = this.xhr.getResponseHeader('Content-Type');
+        contentType = resp.headers.contentType;
       } catch (e) {}
       if (contentType == 'application/octet-stream') {
-        data = this.xhr.response ?? this.xhr.responseText;
+        data = resp;
       } else {
-        data = this.xhr.responseText;
+        data = resp.transform(utf8.decoder).join();
       }
     } catch (e) {
       this.onError(e);
