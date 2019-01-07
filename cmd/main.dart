@@ -34,7 +34,8 @@ main() async {
 
   IO.Socket socket = IO.io('ws://localhost:3000', {
     'secure': false,
-    'path':'/socket.io'
+    'path':'/socket.io',
+    'transports':['polling','websocket']
   });
   socket.on('connect', (_) {
     print('connect');
