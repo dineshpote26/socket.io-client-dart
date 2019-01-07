@@ -37,7 +37,6 @@ class WebSocketTransport extends Transport {
 
   void doOpen() async {
     var uri = this.uri();
-    var protocols = this.protocols;
 
     try {
       this.ws = await WebSocket.connect(uri);
@@ -49,7 +48,6 @@ class WebSocketTransport extends Transport {
     this.addEventListeners();
   }
 
-
   /**
    * Adds event listeners to the socket
    *
@@ -57,10 +55,34 @@ class WebSocketTransport extends Transport {
    */
   void addEventListeners() {
     this.ws.listen(onData,
-        onError:(_) => onError('websocket error'),
+        onError: (_) => onError('websocket error'),
         onDone: () => onClose(),
-        cancelOnError:false
-    );
+        cancelOnError: false);
+  }
+
+  /**
+   * Overloads onData to detect payloads.
+   *
+   * @api private
+   */
+  onData(data) {
+    _logger.fine('websocket got data $data');
+    // decode packet
+    var packet =
+        PacketParser.decodePacket(data, binaryType: this.socket.binaryType);
+
+    if ('opening' == this.readyState) {
+      this.onOpen();
+    }
+
+    // if its a close packet, we close the ongoing requests
+    if ('close' == packet['type']) {
+      this.onClose();
+      return false;
+    }
+
+    // otherwise bypass onData and handle the message
+    this.onPacket(packet);
   }
 
   /**

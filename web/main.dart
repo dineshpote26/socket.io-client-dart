@@ -12,9 +12,18 @@ import 'dart:async';
  * Copyright (C) 2017 Potix Corporation. All Rights Reserved.
  */
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:logging/logging.dart';
 
 main() {
-  IO.Socket socket = IO.io('http://localhost:3000');
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((LogRecord rec) {
+    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });
+
+  IO.Socket socket = IO.io('ws://localhost:3000',{
+    'transports': ['websocket'],
+    'secure': false
+  });
   socket.on('connect', (_) {
     print('connect');
     socket.emit('msg', 'init');
@@ -23,6 +32,7 @@ main() {
       socket.emit('msg', count++);
     });
   });
+
   socket.on('event', (data) => print(data));
   socket.on('disconnect', (_) => print('disconnect'));
   socket.on('fromServer', (_) => print(_));

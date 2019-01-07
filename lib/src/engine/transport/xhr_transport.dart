@@ -165,34 +165,35 @@ class Request extends EventEmitter {
     HttpClient httpClient = HttpClient();
 
     try {
-//      _logger.fine('xhr open ${this.method}: ${this.uri}');
-//
-//      httpClient.openUrl(this.method, Uri.parse(this.uri)).then((req) {
-////        return req.close();
-//        if ('POST' == this.method) {
-//          try {
-//            if (this.isBinary) {
-//              this.req.headers.add('Content-type', 'application/octet-stream');
-//            } else {
-//              this.req.headers.add('Content-type', 'text/plain;charset=UTF-8');
-//            }
-//          } catch (e) {}
-//        }
-//
-//        try {
-//          this.req.headers.add('Accept', '*/*');
-//        } catch (e) {}
-//
-//        _logger.fine('xhr data ${this.data}');
-//        req.add(this.data);
-//        req.close();
-//      }).then((HttpClientResponse response) {
-//        if (200 == response.statusCode || 1223 == response.statusCode) {
-//          this.onLoad(response);
-//        } else {
-//          Timer.run(() => this.onError(response.statusCode));
-//        }
-//      });
+      _logger.fine('xhr open ${this.method}: ${this.uri}');
+      httpClient.openUrl(this.method, Uri.parse(this.uri)).then((req) {
+//        return req.close();
+        if ('POST' == this.method) {
+          try {
+            if (this.isBinary) {
+              this.req.headers.add('Content-type', 'application/octet-stream');
+            } else {
+              this.req.headers.add('Content-type', 'text/plain;charset=UTF-8');
+            }
+          } catch (e) {}
+        }
+
+        try {
+          this.req.headers.add('Accept', '*/*');
+        } catch (e) {}
+
+        _logger.fine('xhr data ${this.data}');
+        if (this.data != null) {
+          req.add(utf8.encode(this.data));
+        }
+        return req.close();
+      }).then((HttpClientResponse response) {
+        if (200 == response.statusCode || 1223 == response.statusCode) {
+          this.onLoad(response);
+        } else {
+          Timer.run(() => this.onError(response.statusCode));
+        }
+      });
     } catch (e) {
       Timer.run(() => onError(e));
       return;
@@ -275,8 +276,13 @@ class Request extends EventEmitter {
       this.onError(e);
     }
     if (null != data) {
-      if (data is ByteBuffer) data = data.asUint8List();
-      this.onData(data);
+      if (data is ByteBuffer){
+        this.onData(data.asUint8List());
+      } else {
+        data.then((val){
+          this.onData(val);
+        });
+      }
     }
   }
 
