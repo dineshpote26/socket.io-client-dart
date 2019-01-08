@@ -14,7 +14,7 @@ import 'package:logging/logging.dart';
 
 import 'package:socket_io_common/src/engine/parser/parser.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
-import 'package:socket_io_client/src/engine/socket.dart';
+import 'package:socket_io_common_client/src/engine/socket.dart';
 
 class Transports {
   static List<String> upgradesTo(String from) {

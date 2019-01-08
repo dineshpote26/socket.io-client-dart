@@ -1,5 +1,3 @@
-import 'dart:async';
-
 /**
  * main.dart
  *
@@ -12,7 +10,8 @@ import 'dart:async';
  *
  * Copyright (C) 2017 Potix Corporation. All Rights Reserved.
  */
-import 'package:socket_io_client/socket_io_browser_client.dart' as BrowserIO;
+import 'package:socket_io_common_client/socket_io_browser_client.dart' as
+BrowserIO;
 import 'package:logging/logging.dart';
 
 main() {

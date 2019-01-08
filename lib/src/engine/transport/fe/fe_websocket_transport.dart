@@ -14,8 +14,8 @@ import 'dart:async';
 import 'dart:html';
 import 'package:logging/logging.dart';
 import 'package:socket_io_common/src/engine/parser/parser.dart';
-import 'package:socket_io_client/src/engine/parseqs.dart';
-import 'package:socket_io_client/src/engine/transport/transports.dart';
+import 'package:socket_io_common_client/src/engine/parseqs.dart';
+import 'package:socket_io_common_client/src/engine/transport/transports.dart';
 
 class FEWebSocketTransport extends Transport {
   static Logger _logger =

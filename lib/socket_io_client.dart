@@ -13,11 +13,11 @@
 
 library socket_io_client;
 
-import 'package:socket_io_client/src/engine/transport/vmv/websocket_transport.dart';
-import 'package:socket_io_client/src/engine/transport/vmv/xhr_transport.dart';
-import 'package:socket_io_client/src/manager.dart';
-import 'package:socket_io_client/socket_io_basic_client.dart' as BasicIO;
-export 'package:socket_io_client/src/socket.dart';
+import 'package:socket_io_common_client/src/engine/transport/vmv/websocket_transport.dart';
+import 'package:socket_io_common_client/src/engine/transport/vmv/xhr_transport.dart';
+import 'package:socket_io_common_client/src/manager.dart';
+import 'package:socket_io_common_client/socket_io_basic_client.dart' as BasicIO;
+export 'package:socket_io_common_client/src/socket.dart';
 
 /**
  * Looks up an existing `Manager` for multiplexing.
@@ -49,3 +49,4 @@ io(uri, [opts]) => BasicIO.io(uri, () {
             }
           });
     }, opts);
+

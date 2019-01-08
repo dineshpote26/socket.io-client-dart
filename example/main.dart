@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_common_client/socket_io_client.dart' as IO;
 import 'package:logging/logging.dart';
 
 class ReadSender implements StreamConsumer<List<int>> {
@@ -19,7 +19,6 @@ class ReadSender implements StreamConsumer<List<int>> {
 
   @override
   Future close() {
-    // TODO: implement close
     return null;
   }
 }

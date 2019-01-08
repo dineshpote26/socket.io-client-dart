@@ -12,8 +12,8 @@
  */
 import 'package:logging/logging.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
-import 'package:socket_io_client/src/manager.dart';
-import 'package:socket_io_client/src/on.dart' as ON;
+import 'package:socket_io_common_client/src/manager.dart';
+import 'package:socket_io_common_client/src/on.dart' as ON;
 import 'package:socket_io_common/src/parser/parser.dart';
 
 /**

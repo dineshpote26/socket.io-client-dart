@@ -16,10 +16,10 @@ import 'dart:math' as Math;
 import 'package:logging/logging.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
 import 'package:socket_io_common/src/parser/parser.dart';
-import 'package:socket_io_client/src/on.dart';
-import 'package:socket_io_client/src/socket.dart';
-import 'package:socket_io_client/src/engine/socket.dart' as Engine;
-import 'package:socket_io_client/src/on.dart' as ON;
+import 'package:socket_io_common_client/src/on.dart';
+import 'package:socket_io_common_client/src/socket.dart';
+import 'package:socket_io_common_client/src/engine/socket.dart' as Engine;
+import 'package:socket_io_common_client/src/on.dart' as ON;
 
 final Logger _logger = new Logger('socket_io_client:Manager');
 
