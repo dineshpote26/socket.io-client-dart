@@ -56,8 +56,9 @@ class Manager extends EventEmitter {
   Decoder decoder;
   bool autoConnect;
   bool skipReconnect;
+  Function transportCreator;
 
-  Manager({uri, Map options}) {
+  Manager({uri, Map<dynamic, dynamic> options, Function this.transportCreator}) {
     options = options ?? <dynamic, dynamic>{};
 
     options['path'] ??= '/socket.io';
@@ -210,7 +211,7 @@ class Manager extends EventEmitter {
     if (this.readyState.contains('open')) return this;
 
     _logger.fine('opening $uri');
-    this.engine = new Engine.Socket(this.uri, this.options);
+    this.engine = new Engine.Socket(this.uri, this.options, this.transportCreator);
     var socket = this.engine;
     this.readyState = 'opening';
     this.skipReconnect = false;

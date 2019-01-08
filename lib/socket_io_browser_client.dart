@@ -13,11 +13,13 @@
 
 library socket_io_client;
 
-import 'package:socket_io_client/src/engine/transport/vmv/websocket_transport.dart';
-import 'package:socket_io_client/src/engine/transport/vmv/xhr_transport.dart';
-import 'package:socket_io_client/src/manager.dart';
-import 'package:socket_io_client/socket_io_basic_client.dart' as BasicIO;
 export 'package:socket_io_client/src/socket.dart';
+
+import 'package:socket_io_client/socket_io_basic_client.dart' as BasicIO;
+import 'package:socket_io_client/src/engine/transport/fe/fe_websocket_transport.dart';
+import 'package:socket_io_client/src/engine/transport/fe/fe_xhr_transport.dart';
+import 'package:socket_io_client/src/engine/transport/fe/jsonp_transport.dart';
+import 'package:socket_io_client/src/manager.dart';
 
 /**
  * Looks up an existing `Manager` for multiplexing.
@@ -37,11 +39,13 @@ io(uri, [opts]) => BasicIO.io(uri, () {
           options: opts,
           transportCreator: (String name, options) {
             if ('websocket' == name) {
-              return new WebSocketTransport(options);
+              return new FEWebSocketTransport(options);
             } else if ('polling' == name) {
               if (options['forceJSONP'] != true) {
-                return new XHRTransport(options);
+                return new FEXHRTransport(options);
               } else {
+                if (options['jsonp'] != false)
+                  return new JSONPTransport(options);
                 throw new StateError('JSONP disabled');
               }
             } else {

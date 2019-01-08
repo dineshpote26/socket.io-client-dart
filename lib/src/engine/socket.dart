@@ -65,8 +65,9 @@ class Socket extends EventEmitter {
   Transport transport;
   bool supportsBinary;
   bool upgrading;
+  Function transportCreator;
 
-  Socket(String uri, Map opts) {
+  Socket(String uri, Map opts, this.transportCreator) {
     opts = opts ?? <dynamic, dynamic>{};
 
     if (uri.isNotEmpty) {
@@ -205,7 +206,7 @@ class Socket extends EventEmitter {
     // session id if we already have one
     if (this.id != null) query['sid'] = this.id;
 
-    var transport = Transports.newInstance(name, {
+    var transport = this.transportCreator(name, {
       'query': query,
       'socket': this,
       'agent': options['agent'] ?? this.agent,
@@ -221,7 +222,6 @@ class Socket extends EventEmitter {
       options['timestampRequests'] ?? this.timestampRequests,
       'timestampParam': options['timestampParam'] ?? this.timestampParam,
       'policyPort': options['policyPort'] ?? this.policyPort,
-      'feCall': options['policyPort'] ?? false,
 //  'pfx: options.pfx || this.pfx,
 //  'key: options.key || this.key,
 //  'passphrase: options.passphrase || this.passphrase,
