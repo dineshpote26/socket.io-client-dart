@@ -38,7 +38,7 @@ main() async {
     'transports':['polling','websocket']
   });
   socket.on('connect', (_) {
-    print('connect');
+    print('connect happened');
     socket.emit('chat message', 'init');
   });
   socket.on('event', (data) => print("received "+data));

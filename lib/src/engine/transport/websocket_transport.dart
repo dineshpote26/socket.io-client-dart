@@ -39,6 +39,7 @@ class WebSocketTransport extends Transport {
     var uri = this.uri();
 
     try {
+      _logger.fine(uri);
       this.ws = await WebSocket.connect(uri);
     } catch (err) {
       return this.emit('error', err);
@@ -46,6 +47,7 @@ class WebSocketTransport extends Transport {
 
     this.supportsBinary = true;
     this.addEventListeners();
+    this.onOpen();
   }
 
   /**
@@ -71,9 +73,9 @@ class WebSocketTransport extends Transport {
     var packet =
         PacketParser.decodePacket(data, binaryType: this.socket.binaryType);
 
-    if ('opening' == this.readyState) {
-      this.onOpen();
-    }
+//    if ('opening' == this.readyState) {
+//
+//    }
 
     // if its a close packet, we close the ongoing requests
     if ('close' == packet['type']) {
