@@ -11,6 +11,9 @@
  * Copyright (C) 2017 Potix Corporation. All Rights Reserved.
  */
 import 'package:logging/logging.dart';
+import 'package:socket_io_client/src/engine/transport/fe_websocket_transport.dart';
+import 'package:socket_io_client/src/engine/transport/fe_xhr_transport.dart';
+import 'package:socket_io_client/src/engine/transport/jsonp_transport.dart';
 import 'package:socket_io_common/src/engine/parser/parser.dart';
 import 'package:socket_io_common/src/util/event_emitter.dart';
 import 'package:socket_io_client/src/engine/socket.dart';
@@ -26,17 +29,33 @@ class Transports {
   }
 
   static Transport newInstance(String name, options) {
-    if ('websocket' == name) {
-      return new WebSocketTransport(options);
-    } else if ('polling' == name) {
-      if (options['forceJSONP'] != true) {
-        return new XHRTransport(options);
+    bool feCall = options['feCall'];
+    if (feCall) {
+      if ('websocket' == name) {
+        return new FEWebSocketTransport(options);
+      } else if ('polling' == name) {
+        if (options['forceJSONP'] != true) {
+          return new FEXHRTransport(options);
+        } else {
+          if (options['jsonp'] != false) return new JSONPTransport(options);
+          throw new StateError('JSONP disabled');
+        }
       } else {
-//        if (options['jsonp'] != false) return new JSONPTransport(options);
-        throw new StateError('JSONP disabled');
+        throw new UnsupportedError('Unknown transport $name');
       }
     } else {
-      throw new UnsupportedError('Unknown transport $name');
+      if ('websocket' == name) {
+        return new WebSocketTransport(options);
+      } else if ('polling' == name) {
+        if (options['forceJSONP'] != true) {
+          return new XHRTransport(options);
+        } else {
+//        if (options['jsonp'] != false) return new JSONPTransport(options);
+          throw new StateError('JSONP disabled');
+        }
+      } else {
+        throw new UnsupportedError('Unknown transport $name');
+      }
     }
   }
 }

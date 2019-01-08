@@ -221,6 +221,7 @@ class Socket extends EventEmitter {
       options['timestampRequests'] ?? this.timestampRequests,
       'timestampParam': options['timestampParam'] ?? this.timestampParam,
       'policyPort': options['policyPort'] ?? this.policyPort,
+      'feCall': options['policyPort'] ?? false,
 //  'pfx: options.pfx || this.pfx,
 //  'key: options.key || this.key,
 //  'passphrase: options.passphrase || this.passphrase,
