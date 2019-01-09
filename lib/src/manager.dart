@@ -58,7 +58,8 @@ class Manager extends EventEmitter {
   bool skipReconnect;
   Function transportCreator;
 
-  Manager({uri, Map<dynamic, dynamic> options, Function this.transportCreator}) {
+  Manager(
+      {uri, Map<dynamic, dynamic> options, Function this.transportCreator}) {
     options = options ?? <dynamic, dynamic>{};
 
     options['path'] ??= '/socket.io';
@@ -131,6 +132,7 @@ class Manager extends EventEmitter {
    * @api public
    */
   bool get reconnection => this._reconnection;
+
   set reconnection(bool v) => this._reconnection = v;
 
   /**
@@ -141,6 +143,7 @@ class Manager extends EventEmitter {
    * @api public
    */
   num get reconnectionAttempts => this._reconnectionAttempts;
+
   set reconnectionAttempts(num v) => this._reconnectionAttempts = v;
 
   /**
@@ -151,42 +154,46 @@ class Manager extends EventEmitter {
    * @api public
    */
   num get reconnectionDelay => this._reconnectionDelay;
+
   set reconnectionDelay(num v) => this._reconnectionDelay = v;
 
   num get randomizationFactor => this._randomizationFactor;
+
   set randomizationFactor(num v) {
     this._randomizationFactor = v;
     if (this.backoff != null) this.backoff.jitter = v;
   }
 
   /**
-     * Sets the maximum delay between reconnections.
-     *
-     * @param {Number} delay
-     * @return {Manager} self or value
-     * @api public
-     */
+   * Sets the maximum delay between reconnections.
+   *
+   * @param {Number} delay
+   * @return {Manager} self or value
+   * @api public
+   */
   num get reconnectionDelayMax => this._reconnectionDelayMax;
+
   set reconnectionDelayMax(num v) {
     this._reconnectionDelayMax = v;
     if (this.backoff != null) this.backoff.max = v;
   }
 
   /**
-     * Sets the connection timeout. `false` to disable
-     *
-     * @return {Manager} self or value
-     * @api public
-     */
+   * Sets the connection timeout. `false` to disable
+   *
+   * @return {Manager} self or value
+   * @api public
+   */
   num get timeout => this._timeout;
+
   set timeout(num v) => this._timeout = v;
 
   /**
-     * Starts trying to reconnect if reconnection is enabled and we have not
-     * started reconnecting yet
-     *
-     * @api private
-     */
+   * Starts trying to reconnect if reconnection is enabled and we have not
+   * started reconnecting yet
+   *
+   * @api private
+   */
   maybeReconnectOnOpen() {
     // Only try to reconnect if it's the first time we're connecting
     if (!this.reconnecting &&
@@ -198,12 +205,12 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Sets the current transport `socket`.
-     *
-     * @param {Function} optional, callback
-     * @return {Manager} self
-     * @api public
-     */
+   * Sets the current transport `socket`.
+   *
+   * @param {Function} optional, callback
+   * @return {Manager} self
+   * @api public
+   */
   open({callback, Map opts}) => connect(callback: callback, opts: opts);
 
   connect({callback, Map opts}) {
@@ -211,7 +218,8 @@ class Manager extends EventEmitter {
     if (this.readyState.contains('open')) return this;
 
     _logger.fine('opening $uri');
-    this.engine = new Engine.Socket(this.uri, this.options, this.transportCreator);
+    this.engine =
+        new Engine.Socket(this.uri, this.options, this.transportCreator);
     var socket = this.engine;
     this.readyState = 'opening';
     this.skipReconnect = false;
@@ -260,10 +268,10 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Called upon transport open.
-     *
-     * @api private
-     */
+   * Called upon transport open.
+   *
+   * @api private
+   */
   onopen([_]) {
     _logger.fine('open');
 
@@ -285,59 +293,59 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Called upon a ping.
-     *
-     * @api private
-     */
+   * Called upon a ping.
+   *
+   * @api private
+   */
   onping([_]) {
     this.lastPing = new DateTime.now().millisecondsSinceEpoch;
     this.emitAll('ping');
   }
 
   /**
-     * Called upon a packet.
-     *
-     * @api private
-     */
+   * Called upon a packet.
+   *
+   * @api private
+   */
   onpong([_]) {
     this.emitAll(
         'pong', new DateTime.now().millisecondsSinceEpoch - this.lastPing);
   }
 
   /**
-     * Called with data.
-     *
-     * @api private
-     */
+   * Called with data.
+   *
+   * @api private
+   */
   ondata(data) {
     this.decoder.add(data);
   }
 
   /**
-     * Called when parser fully decodes a packet.
-     *
-     * @api private
-     */
+   * Called when parser fully decodes a packet.
+   *
+   * @api private
+   */
   ondecoded(packet) {
     this.emit('packet', packet);
   }
 
   /**
-     * Called upon socket error.
-     *
-     * @api private
-     */
+   * Called upon socket error.
+   *
+   * @api private
+   */
   onerror(err) {
     _logger.fine('error $err');
     this.emitAll('error', err);
   }
 
   /**
-     * Creates a new socket for the given `nsp`.
-     *
-     * @return {Socket}
-     * @api public
-     */
+   * Creates a new socket for the given `nsp`.
+   *
+   * @return {Socket}
+   * @api public
+   */
   Socket socket(String nsp, Map opts) {
     var socket = this.nsps[nsp];
 
@@ -365,10 +373,10 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Called upon a socket close.
-     *
-     * @param {Socket} socket
-     */
+   * Called upon a socket close.
+   *
+   * @param {Socket} socket
+   */
   destroy(socket) {
     this.connecting.remove(socket);
     if (this.connecting.isNotEmpty) return;
@@ -377,11 +385,11 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Writes a packet.
-     *
-     * @param {Object} packet
-     * @api private
-     */
+   * Writes a packet.
+   *
+   * @param {Object} packet
+   * @api private
+   */
   packet(Map packet) {
     _logger.fine('writing packet $packet');
     if (packet.containsKey('query') && packet['type'] == 0)
@@ -404,11 +412,11 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * If packet buffer is non-empty, begins encoding the
-     * next packet in line.
-     *
-     * @api private
-     */
+   * If packet buffer is non-empty, begins encoding the
+   * next packet in line.
+   *
+   * @api private
+   */
   processPacketQueue() {
     if (this.packetBuffer.length > 0 && this.encoding != true) {
       var pack = this.packetBuffer.removeAt(0);
@@ -417,10 +425,10 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Clean up transport subscriptions and packet buffer.
-     *
-     * @api private
-     */
+   * Clean up transport subscriptions and packet buffer.
+   *
+   * @api private
+   */
   cleanup() {
     _logger.fine('cleanup');
 
@@ -438,10 +446,10 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Close the current socket.
-     *
-     * @api private
-     */
+   * Close the current socket.
+   *
+   * @api private
+   */
   close() => disconnect();
 
   disconnect() {
@@ -459,10 +467,10 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Called upon engine close.
-     *
-     * @api private
-     */
+   * Called upon engine close.
+   *
+   * @api private
+   */
   onclose(error) {
     _logger.fine('onclose');
 
@@ -477,10 +485,10 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Attempt a reconnection.
-     *
-     * @api private
-     */
+   * Attempt a reconnection.
+   *
+   * @api private
+   */
   reconnect() {
     if (this.reconnecting || this.skipReconnect) return this;
 
@@ -522,10 +530,10 @@ class Manager extends EventEmitter {
   }
 
   /**
-     * Called upon successful reconnect.
-     *
-     * @api private
-     */
+   * Called upon successful reconnect.
+   *
+   * @api private
+   */
   onreconnect() {
     var attempt = this.backoff.attempts;
     this.reconnecting = false;

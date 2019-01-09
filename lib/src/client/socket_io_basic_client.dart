@@ -39,7 +39,7 @@ final Logger _logger = new Logger('socket_io_client');
  *
  * @api public
  */
-io(uri,Manager managerCreator(), [opts]) => _lookup(uri, opts, managerCreator);
+io(uri, Manager managerCreator(), [opts]) => _lookup(uri, opts, managerCreator);
 
 _lookup(uri, opts, Manager managerCreator()) {
   opts = opts ?? <dynamic, dynamic>{};
