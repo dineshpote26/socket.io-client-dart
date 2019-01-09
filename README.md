@@ -31,27 +31,53 @@ Port of awesome JavaScript Node.js library - [Socket.io-client v2.0.1](https://g
     }
     
     main() async {
-    
       Logger.root.level = Level.ALL;
       Logger.root.onRecord.listen((LogRecord rec) {
         print('${rec.level.name}: ${rec.time}: ${rec.message}');
       });
       stdout.writeln('Type something');
     
-      IO.Socket socket = IO.io('ws://localhost:3000', {
+      List<String> cookie = null;
+    
+      IO.Socket socket = IO.io('https://sandbox.ssl2.duapps.com', {
         'secure': false,
-        'path':'/socket.io',
-        'transports':['polling','websocket']
+        'path': '/socket.io',
+        'transports': ['polling'],
+        'request-header-processer': (requestHeader) {
+          print("get request header " + requestHeader.toString());
+          if (cookie != null) {
+            requestHeader.add('cookie', cookie);
+            print("set cookie success");
+          }else{
+            print("set cookie faield");
+          }
+        },
+        'response-header-processer': (responseHeader) {
+          print("get response header " + responseHeader.toString());
+          if ( responseHeader['set-cookie'] != null) {
+            cookie = responseHeader['set-cookie'];
+            print("receive cookie success");
+          } else {
+            print("receive cookie failed");
+          }
+        },
       });
       socket.on('connect', (_) {
         print('connect happened');
         socket.emit('chat message', 'init');
       });
-      socket.on('event', (data) => print("received "+data));
+      socket.on('req-header-event', (data) {
+        print("req-header-event " + data.toString());
+      });
+      socket.on('resp-header-event', (data) {
+        print("resp-header-event " + data.toString());
+      });
+      socket.on('event', (data) => print("received " + data));
       socket.on('disconnect', (_) => print('disconnect'));
       socket.on('fromServer', (_) => print(_));
       await stdin.pipe(ReadSender(socket));
     }
+
 
 
 ## Usage(For Browser)
