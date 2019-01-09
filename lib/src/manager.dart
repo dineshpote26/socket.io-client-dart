@@ -281,6 +281,8 @@ class Manager extends EventEmitter {
     this.subs.add(ON.on(socket, 'pong', this.onpong));
     this.subs.add(ON.on(socket, 'error', this.onerror));
     this.subs.add(ON.on(socket, 'close', this.onclose));
+    this.subs.add(ON.on(socket, 'req-header-event', (_)=>this.emit('req-header-event', _)));
+    this.subs.add(ON.on(socket, 'resp-header-event', (_)=>this.emit('resp-header-event', _)));
     this.subs.add(ON.on(this.decoder, 'decoded', this.ondecoded));
   }
 

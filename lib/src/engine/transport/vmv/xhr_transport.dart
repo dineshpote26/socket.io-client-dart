@@ -21,11 +21,14 @@ import 'package:socket_io_common_client/src/engine/transport/polling_transport.d
  */
 
 final Logger _logger = new Logger('socket_io_client:transport.XHRTransport');
+final String REQ_HEADER_EVENT = "req-header-event";
+final String RESP_HEADER_EVENT = "resp-header-event";
 
 class XHRTransport extends PollingTransport {
   int requestTimeout;
   bool xd;
   bool xs;
+  String cookieRef = null;
 
 //  Request sendXhr;
 //  Request pollXhr;
@@ -112,6 +115,18 @@ class XHRTransport extends PollingTransport {
     req.on('data', (data) {
       onData(data);
     });
+    req.on(REQ_HEADER_EVENT, (data) {
+      if (cookieRef != null) {
+        data.add("cookie", cookieRef);
+      }
+      this.emit(REQ_HEADER_EVENT, data);
+    });
+    req.on(RESP_HEADER_EVENT, (data) {
+      if (data["set-cookie"] != null) {
+        cookieRef = data["set-cookie"][0];
+      }
+      this.emit(RESP_HEADER_EVENT, data);
+    });
     req.on('error', (err) {
       onError('xhr poll error', err);
     });
@@ -167,6 +182,7 @@ class Request extends EventEmitter {
     try {
       _logger.fine('xhr open ${this.method}: ${this.uri}');
       httpClient.openUrl(this.method, Uri.parse(this.uri)).then((req) {
+        this.req = req;
 //        return req.close();
         if ('POST' == this.method) {
           try {
@@ -180,6 +196,7 @@ class Request extends EventEmitter {
 
         try {
           this.req.headers.add('Accept', '*/*');
+          this.emit(REQ_HEADER_EVENT, this.req.headers);
         } catch (e) {}
 
         _logger.fine('xhr data ${this.data}');
@@ -264,6 +281,7 @@ class Request extends EventEmitter {
     var data;
     try {
       var contentType;
+      this.emit(RESP_HEADER_EVENT, resp.headers);
       try {
         contentType = resp.headers.contentType;
       } catch (e) {}
@@ -276,10 +294,10 @@ class Request extends EventEmitter {
       this.onError(e);
     }
     if (null != data) {
-      if (data is ByteBuffer){
+      if (data is ByteBuffer) {
         this.onData(data.asUint8List());
       } else {
-        data.then((val){
+        data.then((val) {
           this.onData(val);
         });
       }

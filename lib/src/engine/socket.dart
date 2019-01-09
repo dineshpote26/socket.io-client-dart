@@ -77,9 +77,7 @@ class Socket extends EventEmitter {
       opts['port'] = this.uri.port;
       if (this.uri.hasQuery) opts['query'] = this.uri.query;
     } else if (opts.containsKey('host')) {
-      opts['hostname'] = Uri
-          .parse(opts['host'])
-          .host;
+      opts['hostname'] = Uri.parse(opts['host']).host;
     }
 
     this.secure = opts['secure'] ?? false;
@@ -90,8 +88,7 @@ class Socket extends EventEmitter {
     }
 
     this.agent = opts['agent'] ?? false;
-    this.hostname =
-        opts['hostname'] ?? 'localhost';
+    this.hostname = opts['hostname'] ?? 'localhost';
     this.port = opts['port'] ?? (this.secure ? 443 : 80);
     var query = opts['query'] ?? {};
     if (query is String)
@@ -102,8 +99,8 @@ class Socket extends EventEmitter {
 
     this.upgrade = opts['upgrade'] != false;
     this.path = (opts['path'] ?? '/engine.io')
-        .toString()
-        .replaceFirst(new RegExp(r'\/$'), '') +
+            .toString()
+            .replaceFirst(new RegExp(r'\/$'), '') +
         '/';
     this.forceJSONP = opts['forceJSONP'] == true;
     this.jsonp = opts['jsonp'] != false;
@@ -124,7 +121,7 @@ class Socket extends EventEmitter {
     if (!opts.containsKey('perMessageDeflate') ||
         opts['perMessageDeflate'] == true) {
       this.perMessageDeflate =
-      opts['perMessageDeflate'] is Map ? opts['perMessageDeflate'] : {};
+          opts['perMessageDeflate'] is Map ? opts['perMessageDeflate'] : {};
       if (!this.perMessageDeflate.containsKey('threshold'))
         this.perMessageDeflate['threshold'] = 1024;
     }
@@ -219,7 +216,7 @@ class Socket extends EventEmitter {
       'forceBase64': options['forceBase64'] ?? this.forceBase64,
       'enablesXDR': options['enablesXDR'] ?? this.enablesXDR,
       'timestampRequests':
-      options['timestampRequests'] ?? this.timestampRequests,
+          options['timestampRequests'] ?? this.timestampRequests,
       'timestampParam': options['timestampParam'] ?? this.timestampParam,
       'policyPort': options['policyPort'] ?? this.policyPort,
 //  'pfx: options.pfx || this.pfx,
@@ -230,7 +227,7 @@ class Socket extends EventEmitter {
 //  'ciphers: options.ciphers || this.ciphers,
 //  'rejectUnauthorized: options.rejectUnauthorized || this.rejectUnauthorized,
       'perMessageDeflate':
-      options['perMessageDeflate'] ?? this.perMessageDeflate,
+          options['perMessageDeflate'] ?? this.perMessageDeflate,
 //  'extraHeaders: options['extraHeaders ?? this.extraHeaders,
 //  'forceNode: options.forceNode || this.forceNode,
 //  'localAddress: options.localAddress || this.localAddress,
@@ -289,12 +286,18 @@ class Socket extends EventEmitter {
 
     // set up transport
     this.transport = transport;
-
     // set up transport listeners
-    transport..on('drain', (_) => onDrain())..on(
-        'packet', (packet) => onPacket(packet))..on(
-        'error', (e) => onError(e))..on(
-        'close', (_) => onClose('transport close'));
+    transport
+      ..on('req-header-event', (_) {
+        this.emit('req-header-event', _);
+      })
+      ..on('resp-header-event', (_) {
+        this.emit('resp-header-event', _);
+      })
+      ..on('drain', (_) => onDrain())
+      ..on('packet', (packet) => onPacket(packet))
+      ..on('error', (e) => onError(e))
+      ..on('close', (_) => onClose('transport close'));
   }
 
   /**
@@ -512,10 +515,10 @@ class Socket extends EventEmitter {
     this.pingTimeoutTimer?.cancel();
     this.pingTimeoutTimer = new Timer(
         new Duration(milliseconds: timeout ?? (pingInterval + pingTimeout)),
-            () {
-          if ('closed' == readyState) return;
-          onClose('ping timeout');
-        });
+        () {
+      if ('closed' == readyState) return;
+      onClose('ping timeout');
+    });
   }
 
   /**
