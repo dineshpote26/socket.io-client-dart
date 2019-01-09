@@ -30,10 +30,30 @@ main() async {
   });
   stdout.writeln('Type something');
 
-  IO.Socket socket = IO.io('ws://localhost:3000', {
+  List<String> cookie = null;
+
+  IO.Socket socket = IO.io('https://localhost:3000', {
     'secure': false,
     'path': '/socket.io',
-    'transports': ['polling']
+    'transports': ['polling'],
+    'request-header-processer': (requestHeader) {
+      print("get request header " + requestHeader.toString());
+      if (cookie != null) {
+        requestHeader.add('cookie', cookie);
+        print("set cookie success");
+      }else{
+        print("set cookie faield");
+      }
+    },
+    'response-header-processer': (responseHeader) {
+      print("get response header " + responseHeader.toString());
+      if (responseHeader['set-cookie'] != null) {
+        cookie = responseHeader['set-cookie'];
+        print("receive cookie success");
+      } else {
+        print("receive cookie failed");
+      }
+    },
   });
   socket.on('connect', (_) {
     print('connect happened');
@@ -43,7 +63,7 @@ main() async {
     print("req-header-event " + data.toString());
   });
   socket.on('resp-header-event', (data) {
-    print("resp-header-event " +  data.toString());
+    print("resp-header-event " + data.toString());
   });
   socket.on('event', (data) => print("received " + data));
   socket.on('disconnect', (_) => print('disconnect'));

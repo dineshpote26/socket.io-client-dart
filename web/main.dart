@@ -10,8 +10,7 @@
  *
  * Copyright (C) 2017 Potix Corporation. All Rights Reserved.
  */
-import 'package:socket_io_common_client/socket_io_browser_client.dart' as
-BrowserIO;
+import 'package:socket_io_common_client/socket_io_client_for_browser.dart' as BrowserIO;
 import 'package:logging/logging.dart';
 
 main() {
@@ -20,7 +19,7 @@ main() {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  BrowserIO.Socket socket = BrowserIO.io('ws://localhost:3000', {
+  BrowserIO.Socket socket = BrowserIO.ioBrowser('ws://localhost:3000', {
     'transports': ['polling','websocket'],
     'secure': false
   });

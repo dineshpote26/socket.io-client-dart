@@ -11,11 +11,9 @@
  * Copyright (C) 2017 Potix Corporation. All Rights Reserved.
  */
 
-library socket_io_client;
-
 export 'package:socket_io_common_client/src/socket.dart';
 
-import 'package:socket_io_common_client/socket_io_basic_client.dart' as BasicIO;
+import 'package:socket_io_common_client/src/client/socket_io_basic_client.dart' as BasicIO;
 import 'package:socket_io_common_client/src/engine/transport/fe/fe_websocket_transport.dart';
 import 'package:socket_io_common_client/src/engine/transport/fe/fe_xhr_transport.dart';
 import 'package:socket_io_common_client/src/engine/transport/fe/jsonp_transport.dart';
@@ -33,7 +31,7 @@ import 'package:socket_io_common_client/src/manager.dart';
  *
  * @api public
  */
-io(uri, [opts]) => BasicIO.io(uri, () {
+ioBrowser(uri, [opts]) => BasicIO.io(uri, () {
       return new Manager(
           uri: uri,
           options: opts,

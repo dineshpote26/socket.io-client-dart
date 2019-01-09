@@ -13,5 +13,4 @@
 
 library socket_io_client;
 
-export 'package:socket_io_common_client/src/client/socket_io_vm_client.dart';
-
+export 'package:socket_io_common_client/src/client/socket_io_browser_client.dart';

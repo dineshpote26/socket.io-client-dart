@@ -288,12 +288,6 @@ class Socket extends EventEmitter {
     this.transport = transport;
     // set up transport listeners
     transport
-      ..on('req-header-event', (_) {
-        this.emit('req-header-event', _);
-      })
-      ..on('resp-header-event', (_) {
-        this.emit('resp-header-event', _);
-      })
       ..on('drain', (_) => onDrain())
       ..on('packet', (packet) => onPacket(packet))
       ..on('error', (e) => onError(e))

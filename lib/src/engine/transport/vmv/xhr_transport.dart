@@ -21,14 +21,13 @@ import 'package:socket_io_common_client/src/engine/transport/polling_transport.d
  */
 
 final Logger _logger = new Logger('socket_io_client:transport.XHRTransport');
-final String REQ_HEADER_EVENT = "req-header-event";
-final String RESP_HEADER_EVENT = "resp-header-event";
 
 class XHRTransport extends PollingTransport {
   int requestTimeout;
   bool xd;
   bool xs;
   String cookieRef = null;
+  Map<String, dynamic> opts;
 
 //  Request sendXhr;
 //  Request pollXhr;
@@ -50,6 +49,7 @@ class XHRTransport extends PollingTransport {
 
     this.xd = opts['xd'] ?? false;
     this.xs = opts['xs'] ?? false;
+    this.opts = opts;
   }
 
   /**
@@ -96,8 +96,13 @@ class XHRTransport extends PollingTransport {
    */
   doWrite(data, fn) {
     var isBinary = data is! String;
-    var req =
-        this.request({'method': 'POST', 'data': data, 'isBinary': isBinary});
+    var req = this.request({
+      'method': 'POST',
+      'data': data,
+      'isBinary': isBinary,
+      'request-header-processer': this.opts['request-header-processer'],
+      'response-header-processer': this.opts['response-header-processer']
+    });
     req.on('success', fn);
     req.on('error', (err) {
       onError('xhr post error', err);
@@ -111,21 +116,9 @@ class XHRTransport extends PollingTransport {
    */
   doPoll() {
     _logger.fine('xhr poll');
-    var req = this.request();
+    var req = this.request(opts);
     req.on('data', (data) {
       onData(data);
-    });
-    req.on(REQ_HEADER_EVENT, (data) {
-      if (cookieRef != null) {
-        data.add("cookie", cookieRef);
-      }
-      this.emit(REQ_HEADER_EVENT, data);
-    });
-    req.on(RESP_HEADER_EVENT, (data) {
-      if (data["set-cookie"] != null) {
-        cookieRef = data["set-cookie"][0];
-      }
-      this.emit(RESP_HEADER_EVENT, data);
     });
     req.on('error', (err) {
       onError('xhr poll error', err);
@@ -155,6 +148,9 @@ class Request extends EventEmitter {
   HttpClientRequest req;
   HttpClientResponse resp;
 
+  Function requestHeaderProcessor;
+  Function responseHeaderProcessor;
+
   Request(Map opts) {
     this.method = opts['method'] ?? 'GET';
     this.uri = opts['uri'];
@@ -167,6 +163,10 @@ class Request extends EventEmitter {
     this.supportsBinary = opts['supportsBinary'];
     this.enablesXDR = opts['enablesXDR'];
     this.requestTimeout = opts['requestTimeout'];
+
+    this.requestHeaderProcessor = opts['request-header-processer'] ?? (_) => _;
+    this.responseHeaderProcessor =
+        opts['response-header-processer'] ?? (_) => _;
 
     this.create();
   }
@@ -196,15 +196,21 @@ class Request extends EventEmitter {
 
         try {
           this.req.headers.add('Accept', '*/*');
-          this.emit(REQ_HEADER_EVENT, this.req.headers);
         } catch (e) {}
 
         _logger.fine('xhr data ${this.data}');
+
+        var reqHeader = this.req.headers;
+        this.requestHeaderProcessor(reqHeader);
+        _logger.fine("make req with header" + reqHeader.toString());
+
         if (this.data != null) {
           req.add(utf8.encode(this.data));
         }
+
         return req.close();
       }).then((HttpClientResponse response) {
+        this.responseHeaderProcessor(response.headers);
         if (200 == response.statusCode || 1223 == response.statusCode) {
           this.onLoad(response);
         } else {
@@ -281,7 +287,6 @@ class Request extends EventEmitter {
     var data;
     try {
       var contentType;
-      this.emit(RESP_HEADER_EVENT, resp.headers);
       try {
         contentType = resp.headers.contentType;
       } catch (e) {}

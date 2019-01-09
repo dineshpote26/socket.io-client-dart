@@ -24,8 +24,6 @@ import 'package:socket_io_common/src/parser/parser.dart';
  */
 
 const List EVENTS = const [
-  'req-header-event',
-  'resp-header-event',
   'connect',
   'connect_error',
   'connect_timeout',
@@ -91,11 +89,7 @@ class Socket extends EventEmitter {
     this.subs = [
       ON.on(io, 'open', this.onopen),
       ON.on(io, 'packet', this.onpacket),
-      ON.on(io, 'close', this.onclose),
-      ON.on(io, 'req-header-event', (_) {
-        this.emit('req-header-event', _);
-      }),
-      ON.on(io, 'resp-header-event', (_) => this.emit('resp-header-event', _))
+      ON.on(io, 'close', this.onclose)
     ];
   }
 
