@@ -293,7 +293,7 @@ class Request extends EventEmitter {
       if (contentType == 'application/octet-stream') {
         data = resp;
       } else {
-        data = resp.transform(utf8.decoder).join();
+        data = utf8.decoder.bind(resp).join();
       }
     } catch (e) {
       this.onError(e);
