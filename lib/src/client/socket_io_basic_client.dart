@@ -45,7 +45,8 @@ _lookup(uri, opts, Manager managerCreator()) {
   opts = opts ?? <dynamic, dynamic>{};
 
   Uri parsed = Uri.parse(uri);
-  var id = '${parsed.scheme}://${parsed.host}:${parsed.port}';
+  //var id = '${parsed.scheme}://${parsed.host}:${parsed.port}';
+  var id = '${parsed.scheme}://${parsed.host}';
   var path = parsed.path;
   var sameNamespace = cache.containsKey(id) && cache[id].nsps.containsKey(path);
   var newConnection = opts['forceNew'] == true ||
