@@ -155,10 +155,17 @@ class FEWebSocketTransport extends Transport {
     }
 
     var ipv6 = this.hostname.contains(':');
-    return schema +
+    
+    /* return schema +
         '://' +
         (ipv6 ? '[' + this.hostname + ']' : this.hostname) +
         port +
+        this.path +
+        queryString;*/
+    
+    return schema +
+        '://' +
+        (ipv6 ? '[' + this.hostname + ']' : this.hostname) +
         this.path +
         queryString;
   }
